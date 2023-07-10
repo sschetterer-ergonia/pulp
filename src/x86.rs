@@ -9872,6 +9872,34 @@ mod tests {
     }
 
     #[test]
+    fn test_dispatch_mask() {
+        struct TestDispatchMask {}
+        impl WithSimd for TestDispatchMask {
+            type Output = ();
+            fn with_simd<S: Simd>(self, simd: S) -> Self::Output {
+                let a = [1.0f32, 2.0, 3.0, 4.0, 5.0, 6.0, 7., 8.];
+                let b = [8.0f32, 7.0, 6.0, 5.0, 4.0, 3.0, 2., 1.];
+                let mut into = [0.0f32; 8];
+
+                let (a_simd, _) = S::f32s_as_simd(&a);
+                let (b_simd, _) = S::f32s_as_simd(&b);
+                let (into_simd, _) = S::f32s_as_mut_simd(&mut into);
+
+                let a_simd = a_simd[0];
+                let b_simd = b_simd[0];
+
+                let mask = simd.f32s_greater_than(b_simd, a_simd);
+
+                let selected = simd.m32s_select_f32s(mask, a_simd, b_simd);
+
+                into_simd[0] = selected;
+
+                assert_eq!(into, [1.0, 2.0, 3.0, 4.0, 4.0, 3.0, 2.0, 1.0]);
+            }
+        }
+    }
+
+    #[test]
     fn cplx_ops() {
         let n = 16;
         let a = (0..n)
