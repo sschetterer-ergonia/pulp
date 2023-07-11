@@ -2162,6 +2162,11 @@ impl Simd for V3 {
     }
 
     #[inline(always)]
+    fn m32s_partial_mask_for(self, slice_len: usize) -> Self::m32s {
+        cast(V3_U32_MASKS[slice_len.min(8)])
+    }
+
+    #[inline(always)]
     fn u32s_partial_load(self, slice: &[u32]) -> Self::u32s {
         unsafe {
             let mask = cast(V3_U32_MASKS[slice.len().min(8)]);
@@ -2871,6 +2876,11 @@ impl Simd for V4 {
             let sqr_rev = _mm512_shuffle_pd::<0b01010101>(cast(sqr), cast(sqr));
             self.f64s_add(sqr, cast(sqr_rev))
         }
+    }
+
+    #[inline(always)]
+    fn m32s_partial_mask_for(self, slice_len: usize) -> Self::u32s {
+        cast(V4_U32_MASKS[slice.len().min(16)])
     }
 
     #[inline(always)]

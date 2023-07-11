@@ -195,6 +195,8 @@ pub trait Simd: Seal + Debug + Copy + Send + Sync + 'static {
     fn u64s_partial_load(self, slice: &[u64]) -> Self::u64s;
     fn u64s_partial_store(self, slice: &mut [u64], values: Self::u64s);
 
+    fn m32s_partial_mask_for(self, slice_len: usize) -> Self::m32s;
+
     #[inline(always)]
     fn i32s_partial_load(self, slice: &[i32]) -> Self::i32s {
         cast(self.u32s_partial_load(bytemuck::cast_slice(slice)))
@@ -1012,6 +1014,11 @@ impl Simd for Scalar {
     fn c64s_abs2(self, a: Self::c64s) -> Self::c64s {
         let norm2 = a.re * a.re + a.im * a.im;
         c64::new(norm2, norm2)
+    }
+
+    #[inline]
+    fn m32s_partial_mask_for(self, slice_len: usize) -> Self::m32s {
+        slice_len > 0
     }
 
     #[inline]
